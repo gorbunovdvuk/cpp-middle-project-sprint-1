@@ -8,8 +8,8 @@ TEST(CmdOptionsTest, TestHelp) {
 
 TEST(CmdOptionsTest, TestEncryptCorrect) {
   CryptoGuard::ProgramOptions options;
-  static constexpr std::array argsEncrypt = { "CryptoGuard", "-c", "encrypt", "-i", "input_file", "-o", "output_file", "-p", "password" };
-  EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
+  static constexpr std::array args = { "CryptoGuard", "-c", "encrypt", "-i", "input_file", "-o", "output_file", "-p", "password" };
+  EXPECT_NO_THROW(options.Parse(args.size(), args.data()));
   EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
   EXPECT_EQ(options.GetPassword(), "password");
   EXPECT_EQ(options.GetInputFile(), "input_file");
@@ -18,8 +18,8 @@ TEST(CmdOptionsTest, TestEncryptCorrect) {
 
 TEST(CmdOptionsTest, TestDecryptCorrect) {
   CryptoGuard::ProgramOptions options;
-  static constexpr std::array argsEncrypt = { "CryptoGuard", "-c", "decrypt", "-i", "input_file", "-o", "output_file", "-p", "password" };
-  EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
+  static constexpr std::array args = { "CryptoGuard", "-c", "decrypt", "-i", "input_file", "-o", "output_file", "-p", "password" };
+  EXPECT_NO_THROW(options.Parse(args.size(), args.data()));
   EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::DECRYPT);
   EXPECT_EQ(options.GetPassword(), "password");
   EXPECT_EQ(options.GetInputFile(), "input_file");
@@ -80,8 +80,8 @@ TEST(CmdOptionsTest, TestPasswordRedundantOption) {
 
 TEST(CmdOptionsTest, TestLongNames) {
   CryptoGuard::ProgramOptions options;
-  static constexpr std::array argsEncrypt = { "CryptoGuard", "--command", "encrypt", "--input", "input_file", "--output", "output_file", "--password", "password" };
-  EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
+  static constexpr std::array args = { "CryptoGuard", "--command", "encrypt", "--input", "input_file", "--output", "output_file", "--password", "password" };
+  EXPECT_NO_THROW(options.Parse(args.size(), args.data()));
   EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
   EXPECT_EQ(options.GetPassword(), "password");
   EXPECT_EQ(options.GetInputFile(), "input_file");
