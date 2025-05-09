@@ -6,40 +6,34 @@ TEST(CmdOptionsTest, TestHelp) {
   EXPECT_EQ(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), 0);
 }
 
-TEST(CmdOptionsTest, TestAllCmdCorrect) {
-  static constexpr std::string_view inputFile = "input_file";
-  static constexpr std::string_view outputFile = "output_file";
-  static constexpr std::string_view password = "password";
+TEST(CmdOptionsTest, TestEncryptCorrect) {
+  CryptoGuard::ProgramOptions options;
+  static constexpr std::array argsEncrypt = { "CryptoGuard", "-c", "encrypt", "-i", "input_file", "-o", "output_file", "-p", "password" };
+  EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
+  EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
+  EXPECT_EQ(options.GetPassword(), "password");
+  EXPECT_EQ(options.GetInputFile(), "input_file");
+  EXPECT_EQ(options.GetOutputFile(), "output_file");
+}
 
-  {
-    CryptoGuard::ProgramOptions options;
-    static constexpr std::array argsEncrypt = { "CryptoGuard", "-c", "encrypt", "-i", inputFile.data(), "-o", outputFile.data(), "-p", password.data() };
-    EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
-    EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
-    EXPECT_EQ(options.GetPassword(), password);
-    EXPECT_EQ(options.GetInputFile(), inputFile);
-    EXPECT_EQ(options.GetOutputFile(), outputFile);
-  }
+TEST(CmdOptionsTest, TestDecryptCorrect) {
+  CryptoGuard::ProgramOptions options;
+  static constexpr std::array argsEncrypt = { "CryptoGuard", "-c", "decrypt", "-i", "input_file", "-o", "output_file", "-p", "password" };
+  EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
+  EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::DECRYPT);
+  EXPECT_EQ(options.GetPassword(), "password");
+  EXPECT_EQ(options.GetInputFile(), "input_file");
+  EXPECT_EQ(options.GetOutputFile(), "output_file");
+}
 
-  {
-    CryptoGuard::ProgramOptions options;
-    static constexpr std::array argsDecrypt = { "CryptoGuard", "-c", "decrypt", "-i", inputFile.data(), "-o", outputFile.data(), "-p", password.data() };
-    EXPECT_NO_THROW(options.Parse(argsDecrypt.size(), argsDecrypt.data()));
-    EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::DECRYPT);
-    EXPECT_EQ(options.GetPassword(), password);
-    EXPECT_EQ(options.GetInputFile(), inputFile);
-    EXPECT_EQ(options.GetOutputFile(), outputFile);
-  }
-
-  {
-    CryptoGuard::ProgramOptions options;
-    static constexpr std::array argsChecksum = { "CryptoGuard", "-c", "checksum", "-i", inputFile.data() };
-    EXPECT_NO_THROW(options.Parse(argsChecksum.size(), argsChecksum.data()));
-    EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::CHECKSUM);
-    EXPECT_EQ(options.GetPassword(), "");
-    EXPECT_EQ(options.GetInputFile(), inputFile);
-    EXPECT_EQ(options.GetOutputFile(), "");
-  }
+TEST(CmdOptionsTest, TestChecksumCorrect) {
+  CryptoGuard::ProgramOptions options;
+  static constexpr std::array argsEncrypt = { "CryptoGuard", "-c", "checksum", "-i", "input_file" };
+  EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
+  EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::CHECKSUM);
+  EXPECT_EQ(options.GetPassword(), "");
+  EXPECT_EQ(options.GetInputFile(), "input_file");
+  EXPECT_EQ(options.GetOutputFile(), "");
 }
 
 TEST(CmdOptionsTest, TestCommandUppercase) {
@@ -49,4 +43,47 @@ TEST(CmdOptionsTest, TestCommandUppercase) {
   EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::CHECKSUM);
 }
 
+TEST(CmdOptionsTest, TestNoCommand) {
+  static constexpr std::array args = { "CryptoGuard", "-i", "input_file" };
+  EXPECT_THROW(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), std::runtime_error);
+}
 
+TEST(CmdOptionsTest, TestUnknownCommand) {
+  static constexpr std::array args = { "CryptoGuard", "-c", "abracadabra" };
+  EXPECT_THROW(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), std::runtime_error);
+}
+
+TEST(CmdOptionsTest, TestNoInputOption) {
+  static constexpr std::array args = { "CryptoGuard", "-c", "encrypt", "-o", "output_file", "-p", "password" };
+  EXPECT_THROW(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), std::runtime_error);
+}
+
+TEST(CmdOptionsTest, TestNoOutputOption) {
+  static constexpr std::array args = { "CryptoGuard", "-c", "decrypt", "-i", "input_file", "-p", "password" };
+  EXPECT_THROW(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), std::runtime_error);
+}
+
+TEST(CmdOptionsTest, TestNoPasswordOption) {
+  static constexpr std::array args = { "CryptoGuard", "-c", "encrypt", "-i", "input_file", "-o", "output_file" };
+  EXPECT_THROW(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), std::runtime_error);
+}
+
+TEST(CmdOptionsTest, TestOutputRedundantOption) {
+  static constexpr std::array args = { "CryptoGuard", "-c", "checksum", "-i", "input_file", "-o", "output_file" };
+  EXPECT_THROW(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), std::runtime_error);
+}
+
+TEST(CmdOptionsTest, TestPasswordRedundantOption) {
+  static constexpr std::array args = { "CryptoGuard", "-c", "checksum", "-i", "input_file", "-p", "password" };
+  EXPECT_THROW(CryptoGuard::ProgramOptions().Parse(args.size(), args.data()), std::runtime_error);
+}
+
+TEST(CmdOptionsTest, TestLongNames) {
+  CryptoGuard::ProgramOptions options;
+  static constexpr std::array argsEncrypt = { "CryptoGuard", "--command", "encrypt", "--input", "input_file", "--output", "output_file", "--password", "password" };
+  EXPECT_NO_THROW(options.Parse(argsEncrypt.size(), argsEncrypt.data()));
+  EXPECT_EQ(options.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
+  EXPECT_EQ(options.GetPassword(), "password");
+  EXPECT_EQ(options.GetInputFile(), "input_file");
+  EXPECT_EQ(options.GetOutputFile(), "output_file");
+}
