@@ -34,7 +34,7 @@ AesCipherParams CreateChiperParamsFromPassword(std::string_view password) {
 
 int main(int argc, char *argv[]) {
     try {
-        //
+        /*//
         // OpenSSL пример использования:
         //
         std::string input = "01234567890123456789";
@@ -75,9 +75,13 @@ int main(int argc, char *argv[]) {
         EVP_cleanup();
         //
         // Конец примера
-        //
+        //*/
 
         CryptoGuard::ProgramOptions options;
+
+        if (!options.Parse(argc, argv)) {
+            return 0;
+        }
 
         CryptoGuard::CryptoGuardCtx cryptoCtx;
 
