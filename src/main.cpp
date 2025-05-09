@@ -90,20 +90,35 @@ int main(int argc, char *argv[]) {
         switch (options.GetCommand()) {
         case COMMAND_TYPE::ENCRYPT: {
             std::fstream fin(options.GetInputFile(), std::ios::in);
+            if (!fin) {
+                throw std::runtime_error("Failed to open input file");
+            }
             std::fstream fout(options.GetOutputFile(), std::ios::out | std::ios::trunc);
+            if (!fout) {
+                throw std::runtime_error("Failed to open output file");
+            }
             cryptoCtx.EncryptFile(fin, fout, options.GetPassword());
             std::print("File encoded successfully\n");
             break;
         }
         case COMMAND_TYPE::DECRYPT: {
             std::fstream fin(options.GetInputFile(), std::ios::in);
+            if (!fin) {
+                throw std::runtime_error("Failed to open input file");
+            }
             std::fstream fout(options.GetOutputFile(), std::ios::out | std::ios::trunc);
+            if (!fout) {
+                throw std::runtime_error("Failed to open output file");
+            }
             cryptoCtx.DecryptFile(fin, fout, options.GetPassword());
             std::print("File decoded successfully\n");
             break;
         }
         case COMMAND_TYPE::CHECKSUM: {
             std::fstream fin(options.GetInputFile(), std::ios::in);
+            if (!fin) {
+                throw std::runtime_error("Failed to open input file");
+            }
             std::print("Checksum: {}\n", cryptoCtx.CalculateChecksum(fin));
             break;
         }
