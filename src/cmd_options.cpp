@@ -32,12 +32,8 @@ bool ProgramOptions::Parse(int argc, const char* const argv[]) {
         }
         std::string command = vm["command"].as<std::string>();
         std::ranges::transform(command, command.begin(), ::tolower);
-        if (command == "encrypt") {
-            command_ = COMMAND_TYPE::ENCRYPT;
-        } else if (command == "decrypt") {
-            command_ = COMMAND_TYPE::DECRYPT;
-        } else if (command == "checksum") {
-            command_ = COMMAND_TYPE::CHECKSUM;
+        if (commandMapping_.contains(command)) {
+            command_ = commandMapping_.at(command);
         } else {
             throw std::runtime_error("Argument error: Unknown command '" + command + "'");
         }
