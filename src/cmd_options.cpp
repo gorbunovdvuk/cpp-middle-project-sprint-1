@@ -18,7 +18,7 @@ ProgramOptions::ProgramOptions() : desc_("Allowed options") {
 
 ProgramOptions::~ProgramOptions() = default;
 
-bool ProgramOptions::Parse(int argc, char *argv[]) {
+bool ProgramOptions::Parse(int argc, const char* const argv[]) {
     try {
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc_), vm);
@@ -28,8 +28,7 @@ bool ProgramOptions::Parse(int argc, char *argv[]) {
             return false;
         }
         if (!vm.contains("command")) {
-            std::cerr << "Argument error: --command option is required" << std::endl;
-            return false;
+            throw std::runtime_error("Argument error: --command option is required");
         }
         std::string command = vm["command"].as<std::string>();
         std::ranges::transform(command, command.begin(), ::tolower);
@@ -40,27 +39,31 @@ bool ProgramOptions::Parse(int argc, char *argv[]) {
         } else if (command == "checksum") {
             command_ = COMMAND_TYPE::CHECKSUM;
         } else {
-            std::cerr << "Argument error: Unknown command '" << command << "'" << std::endl;
-            return false;
+            throw std::runtime_error("Argument error: Unknown command '" + command + "'");
         }
         if (!vm.contains("input")) {
-            std::cerr << "Argument error: input option is required" << std::endl;
-            return false;
+            throw std::runtime_error("Argument error: input option is required");
         }
         inputFile_ = vm["input"].as<std::string>();
         if (command_ == COMMAND_TYPE::ENCRYPT || command_ == COMMAND_TYPE::DECRYPT) {
             if (!vm.contains("output")) {
-                std::cerr << "Argument error: output option is required" << std::endl;
-                return false;
+                throw std::runtime_error("Argument error: output option is required");
             }
             if (!vm.contains("password")) {
-                std::cerr << "Argument error: password option is required" << std::endl;
-                return false;
+                throw std::runtime_error("Argument error: password option is required");
+            }
+            outputFile_ = vm["output"].as<std::string>();
+            password_ = vm["password"].as<std::string>();
+        } else {
+            if (vm.contains("output")) {
+                throw std::runtime_error("Argument error: output option is redundant");
+            }
+            if (vm.contains("password")) {
+                throw std::runtime_error("Argument error: password option is redundant");
             }
         }
     } catch (po::error &e) {
-        std::cerr << "Argument error: " + std::string(e.what());
-        return false;
+        throw std::runtime_error("Argument error: " + std::string(e.what()));
     }
     return true;
 }

@@ -17,7 +17,7 @@ public:
         CHECKSUM,
     };
 
-    bool Parse(int argc, char *argv[]);
+    bool Parse(int argc, const char* const argv[]);
 
     COMMAND_TYPE GetCommand() const { return command_; }
     std::string GetInputFile() const { return inputFile_; }
