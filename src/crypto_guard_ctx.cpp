@@ -38,7 +38,7 @@ public:
             throw std::runtime_error("Failed to initialize MD context");
         }
 
-        static constexpr std::size_t BUFFER_SIZE = 8;
+        static constexpr std::size_t BUFFER_SIZE = 1024;
         std::vector<unsigned char> inBuffer(BUFFER_SIZE);
 
         while (inStream) {
@@ -114,7 +114,7 @@ private:
             throw std::runtime_error("Failed to initialize cipher");
         }
 
-        static constexpr std::size_t BUFFER_SIZE = 8;
+        static constexpr std::size_t BUFFER_SIZE = 1024;
 
         std::vector<unsigned char> inBuffer(BUFFER_SIZE);
         std::vector<unsigned char> outBuffer(BUFFER_SIZE + EVP_MAX_BLOCK_LENGTH);
