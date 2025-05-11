@@ -54,6 +54,9 @@ public:
 
         while (inStream) {
             inStream.read(reinterpret_cast<char *>(inBuffer.data()), BUFFER_SIZE);
+            if (inStream.bad()) {
+                throw std::runtime_error("File read failure");
+            }
             std::size_t readSize = inStream.gcount();
             if (readSize > 0 && EVP_DigestUpdate(ctx.get(), inBuffer.data(), readSize) != 1) {
                 throw std::runtime_error("Failed to update MD context: " + OpenSSLError());
@@ -130,6 +133,9 @@ private:
 
         while (inStream) {
             inStream.read(reinterpret_cast<char *>(inBuffer.data()), BUFFER_SIZE);
+            if (inStream.bad()) {
+                throw std::runtime_error("File read failure");
+            }
             std::size_t readSize = inStream.gcount();
             if (readSize > 0) {
                 int writeSize;
@@ -137,6 +143,9 @@ private:
                     throw std::runtime_error("Failed to cipher data: " + OpenSSLError());
                 }
                 outStream.write(reinterpret_cast<char *>(outBuffer.data()), writeSize);
+                if (outStream.bad()) {
+                    throw std::runtime_error("File write failure");
+                }
             }
         }
         int finalWriteSize;
@@ -144,7 +153,9 @@ private:
             throw std::runtime_error("Failed to finalize data: " + OpenSSLError());
         }
         outStream.write(reinterpret_cast<char *>(outBuffer.data()), finalWriteSize);
-        outStream.flush();
+        if (outStream.bad()) {
+            throw std::runtime_error("File write failure");
+        }
     }
 };
 
