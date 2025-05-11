@@ -1,7 +1,7 @@
 #include "crypto_guard_ctx.h"
 
-#include <sstream>
 #include <gtest/gtest.h>
+#include <sstream>
 
 TEST(CryptoGuardCtxTest, TestCalculateChecksum) {
     const std::string line = "Hello OpenSSL crypto world!";
