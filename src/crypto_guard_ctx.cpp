@@ -45,7 +45,7 @@ public:
             inStream.read(reinterpret_cast<char *>(inBuffer.data()), BUFFER_SIZE);
             std::size_t readSize = inStream.gcount();
             if (readSize > 0) {
-                if (EVP_DigestUpdate(ctx.get(), inBuffer.data(), inBuffer.size()) != 1) {
+                if (EVP_DigestUpdate(ctx.get(), inBuffer.data(), readSize) != 1) {
                     throw std::runtime_error("Failed to update MD context");
                 }
             }
