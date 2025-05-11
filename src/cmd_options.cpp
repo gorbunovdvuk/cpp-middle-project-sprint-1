@@ -1,6 +1,7 @@
 #include "cmd_options.h"
 
 #include <iostream>
+#include <ranges>
 #include <print>
 
 namespace CryptoGuard {
@@ -8,10 +9,12 @@ namespace CryptoGuard {
 namespace po = boost::program_options;
 
 ProgramOptions::ProgramOptions() : desc_("Allowed options") {
-    desc_.add_options()("help,h", "Show help.")("command,c", po::value<std::string>(),
-                                                "Command 'encrypt', 'decrypt' or 'checksum'.")(
-        "input,i", po::value<std::string>(), "Input file.")("output,o", po::value<std::string>(), "Output file.")(
-        "password,p", po::value<std::string>(), "Password.");
+    desc_.add_options()
+        ("help,h", "Show help.")
+        ("command,c", po::value<std::string>()->required(), "Command 'encrypt', 'decrypt' or 'checksum'.")
+        ("input,i", po::value<std::string>(), "Input file.")
+        ("output,o", po::value<std::string>(), "Output file.")
+        ("password,p", po::value<std::string>(), "Password.");
 }
 
 ProgramOptions::~ProgramOptions() = default;
@@ -20,14 +23,10 @@ bool ProgramOptions::Parse(int argc, const char *const argv[]) {
     try {
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc_), vm);
-        po::notify(vm);
         if (vm.contains("help")) {
-            std::cout << desc_ << std::endl;
             return false;
         }
-        if (!vm.contains("command")) {
-            throw std::runtime_error("Argument error: --command option is required");
-        }
+        po::notify(vm);
         std::string command = vm["command"].as<std::string>();
         std::ranges::transform(command, command.begin(), ::tolower);
         if (commandMapping_.contains(command)) {

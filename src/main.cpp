@@ -11,6 +11,7 @@ int main(int argc, char *argv[]) {
         CryptoGuard::ProgramOptions options;
 
         if (!options.Parse(argc, argv)) {
+            options.PrintHelp();
             return 0;
         }
 
