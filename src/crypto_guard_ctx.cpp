@@ -1,4 +1,6 @@
 #include "crypto_guard_ctx.h"
+
+#include <iomanip>
 #include <iostream>
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -55,7 +57,12 @@ public:
         if (EVP_DigestFinal_ex(ctx.get(), outBuffer.data(), &outLength) != 1) {
             throw std::runtime_error("Failed to calculate final checksum");
         }
-        return std::string(outBuffer.data(), outBuffer.data() + outLength);
+
+        std::ostringstream result;
+        for (std::size_t i = 0; i < outLength; i++) {
+            std::print(result, "{:02x}", outBuffer[i]);
+        }
+        return result.str();
     }
 
 private:
