@@ -86,3 +86,13 @@ TEST(CryptoGuardCtxTest, TestAlteredData) {
     encrypted = std::stringstream(encrypted_string);
     ASSERT_THROW(ctx.DecryptFile(encrypted, decrypted, password), std::runtime_error);
 }
+
+TEST(CryptoGuardCtxTest, EmptyStreamTest) {
+    const std::string password = "password";
+    CryptoGuard::CryptoGuardCtx ctx;
+
+    std::stringstream input, encrypted, decrypted;
+    ctx.EncryptFile(input, encrypted, password);
+    ctx.DecryptFile(encrypted, decrypted, password);
+    EXPECT_TRUE(decrypted.str().empty());
+}
