@@ -62,7 +62,7 @@ TEST(CryptoGuardCtxTest, TestUnreadableInput) {
     ASSERT_THROW(ctx.CalculateChecksum(unreadable_input), std::runtime_error);
 }
 
-TEST(CryptoGuardCtxTest, TextUnwritableOutput) {
+TEST(CryptoGuardCtxTest, TestUnwritableOutput) {
     const std::string line = "Hello OpenSSL crypto world!";
     const std::string password = "password";
     CryptoGuard::CryptoGuardCtx ctx;
@@ -72,4 +72,17 @@ TEST(CryptoGuardCtxTest, TextUnwritableOutput) {
 
     ASSERT_THROW(ctx.EncryptFile(input, unwritable_output, password), std::runtime_error);
     ASSERT_THROW(ctx.DecryptFile(input, unwritable_output, password), std::runtime_error);
+}
+
+TEST(CryptoGuardCtxTest, TestAlteredData) {
+    const std::string line = "Hello OpenSSL crypto world!";
+    const std::string password = "password";
+    CryptoGuard::CryptoGuardCtx ctx;
+
+    std::stringstream input(line), encrypted, decrypted;
+    ctx.EncryptFile(input, encrypted, password);
+    std::string encrypted_string = encrypted.str();
+    encrypted_string.erase(encrypted_string.begin());
+    encrypted = std::stringstream(encrypted_string);
+    ASSERT_THROW(ctx.DecryptFile(encrypted, decrypted, password), std::runtime_error);
 }
