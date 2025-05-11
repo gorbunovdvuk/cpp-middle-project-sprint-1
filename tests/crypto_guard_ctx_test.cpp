@@ -1,16 +1,40 @@
 #include "crypto_guard_ctx.h"
 
+#include <sstream>
 #include <gtest/gtest.h>
 
 TEST(CryptoGuardCtxTest, BasicAppUsage) {
-    static constexpr std::string_view line = "Hello OpenSSL crypto world!";
-    static constexpr std::string_view password = "PaSsWoRd";
+    const std::string line = "Hello OpenSSL crypto world!";
+    const std::string password = "PaSsWoRd";
     CryptoGuard::CryptoGuardCtx ctx;
-    std::stringstream input1, input2, encrypted, decrypted;
-    input1 << line;
-    input2 << line;
-    ASSERT_NO_THROW(ctx.EncryptFile(input1, encrypted, password));
-    ASSERT_NO_THROW(ctx.DecryptFile(encrypted, decrypted, password));
-    EXPECT_EQ(decrypted.str(), line);
-    ASSERT_EQ(ctx.CalculateChecksum(input2), ctx.CalculateChecksum(decrypted));
+    std::string initial_checksum = [&line, &ctx]() {
+        std::stringstream input(line);
+        return ctx.CalculateChecksum(input);
+    }();
+    std::string encdec_checksum = [&line, &ctx, &password]() {
+        std::stringstream input(line);
+        std::stringstream encrypted, decrypted;
+        ctx.EncryptFile(input, encrypted, password);
+        ctx.DecryptFile(encrypted, decrypted, password);
+        return ctx.CalculateChecksum(decrypted);
+    }();
+    EXPECT_EQ(initial_checksum, encdec_checksum);
+}
+
+TEST(CryptoGuardCtxTest, TestLargeInput) {
+    const std::string line = std::string(1'000'000, 'A');
+    const std::string password = "password";
+    CryptoGuard::CryptoGuardCtx ctx;
+    std::string initial_checksum = [&line, &ctx]() {
+        std::stringstream input(line);
+        return ctx.CalculateChecksum(input);
+    }();
+    std::string encdec_checksum = [&line, &ctx, &password]() {
+        std::stringstream input(line);
+        std::stringstream encrypted, decrypted;
+        ctx.EncryptFile(input, encrypted, password);
+        ctx.DecryptFile(encrypted, decrypted, password);
+        return ctx.CalculateChecksum(decrypted);
+    }();
+    EXPECT_EQ(initial_checksum, encdec_checksum);
 }
