@@ -94,5 +94,8 @@ TEST(CryptoGuardCtxTest, EmptyStreamTest) {
     std::stringstream input, encrypted, decrypted;
     ctx.EncryptFile(input, encrypted, password);
     ctx.DecryptFile(encrypted, decrypted, password);
+    std::stringstream checksum_input;
+    EXPECT_EQ(ctx.CalculateChecksum(checksum_input),
+              "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
     EXPECT_TRUE(decrypted.str().empty());
 }
