@@ -44,7 +44,7 @@ namespace {
 
 std::string OpenSSLError() {
     auto err = ERR_get_error();
-    static std::array<char, 256> buffer;
+    std::array<char, 256> buffer;
     ERR_error_string_n(err, buffer.data(), buffer.size());
     return std::string(buffer.data());
 }
@@ -86,7 +86,7 @@ std::string CryptoGuardCtx::Impl::CalculateChecksum(std::iostream &inStream) {
     }
 
     static constexpr std::size_t BUFFER_SIZE = 1024;
-    std::vector<unsigned char> inBuffer(BUFFER_SIZE);
+    std::array<unsigned char, BUFFER_SIZE> inBuffer;
 
     while (inStream) {
         inStream.read(reinterpret_cast<char *>(inBuffer.data()), BUFFER_SIZE);
@@ -137,8 +137,8 @@ void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &ou
 
     static constexpr std::size_t BUFFER_SIZE = 1024;
 
-    std::vector<unsigned char> inBuffer(BUFFER_SIZE);
-    std::vector<unsigned char> outBuffer(BUFFER_SIZE + EVP_MAX_BLOCK_LENGTH);
+    std::array<unsigned char, BUFFER_SIZE> inBuffer;
+    std::array<unsigned char, BUFFER_SIZE + EVP_MAX_BLOCK_LENGTH> outBuffer;
 
     while (inStream) {
         inStream.read(reinterpret_cast<char *>(inBuffer.data()), BUFFER_SIZE);
