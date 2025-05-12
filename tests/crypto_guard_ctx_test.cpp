@@ -47,7 +47,7 @@ TEST(CryptoGuardCtxTest, TestDecryptDifferentPassword) {
     std::stringstream input(line);
     std::stringstream encrypted, decrypted;
     ctx.EncryptFile(input, encrypted, "pass1");
-    ASSERT_THROW(ctx.DecryptFile(encrypted, decrypted, "pass2"), std::runtime_error);
+    EXPECT_THROW(ctx.DecryptFile(encrypted, decrypted, "pass2"), std::runtime_error);
 }
 
 TEST(CryptoGuardCtxTest, TestUnreadableInput) {
@@ -57,9 +57,9 @@ TEST(CryptoGuardCtxTest, TestUnreadableInput) {
     std::stringstream unreadable_input, output;
     unreadable_input.setstate(std::ios_base::failbit);
 
-    ASSERT_THROW(ctx.EncryptFile(unreadable_input, output, password), std::runtime_error);
-    ASSERT_THROW(ctx.DecryptFile(unreadable_input, output, password), std::runtime_error);
-    ASSERT_THROW(ctx.CalculateChecksum(unreadable_input), std::runtime_error);
+    EXPECT_THROW(ctx.EncryptFile(unreadable_input, output, password), std::runtime_error);
+    EXPECT_THROW(ctx.DecryptFile(unreadable_input, output, password), std::runtime_error);
+    EXPECT_THROW(ctx.CalculateChecksum(unreadable_input), std::runtime_error);
 }
 
 TEST(CryptoGuardCtxTest, TestUnwritableOutput) {
@@ -70,8 +70,8 @@ TEST(CryptoGuardCtxTest, TestUnwritableOutput) {
     std::stringstream input(line), unwritable_output;
     unwritable_output.setstate(std::ios_base::failbit);
 
-    ASSERT_THROW(ctx.EncryptFile(input, unwritable_output, password), std::runtime_error);
-    ASSERT_THROW(ctx.DecryptFile(input, unwritable_output, password), std::runtime_error);
+    EXPECT_THROW(ctx.EncryptFile(input, unwritable_output, password), std::runtime_error);
+    EXPECT_THROW(ctx.DecryptFile(input, unwritable_output, password), std::runtime_error);
 }
 
 TEST(CryptoGuardCtxTest, TestAlteredData) {
@@ -84,7 +84,7 @@ TEST(CryptoGuardCtxTest, TestAlteredData) {
     std::string encrypted_string = encrypted.str();
     encrypted_string.erase(encrypted_string.begin());
     encrypted = std::stringstream(encrypted_string);
-    ASSERT_THROW(ctx.DecryptFile(encrypted, decrypted, password), std::runtime_error);
+    EXPECT_THROW(ctx.DecryptFile(encrypted, decrypted, password), std::runtime_error);
 }
 
 TEST(CryptoGuardCtxTest, EmptyStreamTest) {
