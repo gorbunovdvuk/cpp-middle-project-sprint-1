@@ -15,14 +15,19 @@ public:
     ~Impl() { EVP_cleanup(); };
 
     void EncryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password) {
-        CipherFile(inStream, outStream, password, true);
+        CipherFile(inStream, outStream, password, Action::Encrypt);
     }
 
     void DecryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password) {
-        CipherFile(inStream, outStream, password, false);
+        CipherFile(inStream, outStream, password, Action::Decrypt);
     }
 
     std::string CalculateChecksum(std::iostream &inStream);
+
+    enum Action {
+        Encrypt,
+        Decrypt,
+    };
 
 private:
     struct AesCipherParams {
@@ -35,9 +40,9 @@ private:
         std::array<unsigned char, IV_SIZE> iv;    // Initialization vector
     };
 
-    AesCipherParams CipherParamsByPassword(std::string_view password, bool encrypt);
+    AesCipherParams CipherParamsByPassword(std::string_view password, Action action);
 
-    void CipherFile(std::iostream &inStream, std::iostream &outStream, std::string_view password, bool encrypt);
+    void CipherFile(std::iostream &inStream, std::iostream &outStream, std::string_view password, Action action);
 };
 
 namespace {
@@ -52,7 +57,7 @@ std::string OpenSSLError() {
 }  // namespace
 
 CryptoGuardCtx::Impl::AesCipherParams CryptoGuardCtx::Impl::CipherParamsByPassword(std::string_view password,
-                                                                                   bool encrypt) {
+                                                                                   Action action) {
     AesCipherParams params;
     constexpr std::array<unsigned char, 8> salt = {'1', '2', '3', '4', '5', '6', '7', '8'};
 
@@ -64,7 +69,7 @@ CryptoGuardCtx::Impl::AesCipherParams CryptoGuardCtx::Impl::CipherParamsByPasswo
         throw std::runtime_error{"Failed to create a key from password: " + OpenSSLError()};
     }
 
-    params.encrypt = encrypt;
+    params.encrypt = action == Action::Encrypt;
 
     return params;
 }
@@ -114,7 +119,7 @@ std::string CryptoGuardCtx::Impl::CalculateChecksum(std::iostream &inStream) {
 }
 
 void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &outStream, std::string_view password,
-                                      bool encrypt) {
+                                      Action action) {
     using CipherCtxPointer =
         std::unique_ptr<EVP_CIPHER_CTX, decltype([](EVP_CIPHER_CTX *ptr) { EVP_CIPHER_CTX_free(ptr); })>;
     if (!inStream.good()) {
@@ -123,7 +128,7 @@ void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &ou
     if (!outStream.good()) {
         throw std::runtime_error("Output stream is not writable");
     }
-    AesCipherParams params = CipherParamsByPassword(password, encrypt);
+    AesCipherParams params = CipherParamsByPassword(password, action);
     CipherCtxPointer ctx(EVP_CIPHER_CTX_new());
 
     if (!ctx) {
