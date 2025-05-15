@@ -157,7 +157,7 @@ void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &ou
                 throw std::runtime_error(std::format("Failed to cipher data: {}", OpenSSLError()));
             }
             outStream.write(reinterpret_cast<char *>(outBuffer.data()), writeSize);
-            if (outStream.bad()) {
+            if (outStream.fail()) {
                 throw std::runtime_error("File write failure");
             }
         }
@@ -167,7 +167,7 @@ void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &ou
         throw std::runtime_error(std::format("Failed to finalize data: {}", OpenSSLError()));
     }
     outStream.write(reinterpret_cast<char *>(outBuffer.data()), finalWriteSize);
-    if (outStream.bad()) {
+    if (outStream.fail()) {
         throw std::runtime_error("File write failure");
     }
 }
