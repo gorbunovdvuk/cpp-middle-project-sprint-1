@@ -6,6 +6,18 @@
 #include <stdexcept>
 #include <string>
 
+namespace {
+
+std::fstream GetFilename(std::string_view path, std::ios_base::openmode mode) {
+    std::fstream file(path.data(), mode);
+    if (!file.is_open()) {
+        throw std::runtime_error(std::format("Failed to open file '{}'", path));
+    }
+    return file;
+}
+
+}  // namespace
+
 int main(int argc, char *argv[]) {
     try {
         CryptoGuard::ProgramOptions options;
@@ -20,36 +32,21 @@ int main(int argc, char *argv[]) {
         using COMMAND_TYPE = CryptoGuard::ProgramOptions::COMMAND_TYPE;
         switch (options.GetCommand()) {
         case COMMAND_TYPE::ENCRYPT: {
-            std::fstream fin(options.GetInputFile(), std::ios::binary | std::ios::in);
-            if (!fin) {
-                throw std::runtime_error("Failed to open input file");
-            }
-            std::fstream fout(options.GetOutputFile(), std::ios::binary | std::ios::out | std::ios::trunc);
-            if (!fout) {
-                throw std::runtime_error("Failed to open output file");
-            }
+            std::fstream fin(GetFilename(options.GetInputFile(), std::ios::binary | std::ios::in));
+            std::fstream fout(GetFilename(options.GetOutputFile(), std::ios::binary | std::ios::out | std::ios::trunc));
             cryptoCtx.EncryptFile(fin, fout, options.GetPassword());
             std::print("File encoded successfully\n");
             break;
         }
         case COMMAND_TYPE::DECRYPT: {
-            std::fstream fin(options.GetInputFile(), std::ios::binary | std::ios::in);
-            if (!fin) {
-                throw std::runtime_error("Failed to open input file");
-            }
-            std::fstream fout(options.GetOutputFile(), std::ios::binary | std::ios::out | std::ios::trunc);
-            if (!fout) {
-                throw std::runtime_error("Failed to open output file");
-            }
+            std::fstream fin(GetFilename(options.GetInputFile(), std::ios::binary | std::ios::in));
+            std::fstream fout(GetFilename(options.GetOutputFile(), std::ios::binary | std::ios::out | std::ios::trunc));
             cryptoCtx.DecryptFile(fin, fout, options.GetPassword());
             std::print("File decoded successfully\n");
             break;
         }
         case COMMAND_TYPE::CHECKSUM: {
-            std::fstream fin(options.GetInputFile(), std::ios::binary | std::ios::in);
-            if (!fin) {
-                throw std::runtime_error("Failed to open input file");
-            }
+            std::fstream fin(GetFilename(options.GetInputFile(), std::ios::binary | std::ios::in));
             std::print("Checksum: {}\n", cryptoCtx.CalculateChecksum(fin));
             break;
         }
