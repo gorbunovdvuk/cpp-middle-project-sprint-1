@@ -47,11 +47,11 @@ private:
 
 namespace {
 
-std::string OpenSSLError() {
+std::string_view OpenSSLError() {
     auto err = ERR_get_error();
-    std::array<char, 256> buffer;
+    static std::array<char, 256> buffer;
     ERR_error_string_n(err, buffer.data(), buffer.size());
-    return std::string(buffer.data());
+    return {buffer.data()};
 }
 
 }  // namespace
@@ -66,7 +66,7 @@ CryptoGuardCtx::Impl::AesCipherParams CryptoGuardCtx::Impl::CipherParamsByPasswo
                                 static_cast<int>(password.size()), 1, params.key.data(), params.iv.data());
 
     if (result == 0) {
-        throw std::runtime_error{"Failed to create a key from password: " + OpenSSLError()};
+        throw std::runtime_error{std::format("Failed to create a key from password: {}", OpenSSLError())};
     }
 
     params.encrypt = action == Action::Encrypt;
@@ -83,11 +83,11 @@ std::string CryptoGuardCtx::Impl::CalculateChecksum(std::iostream &inStream) {
 
     ChecksumCtxPointer ctx(EVP_MD_CTX_new());
     if (!ctx) {
-        throw std::runtime_error("Failed to create MD context: " + OpenSSLError());
+        throw std::runtime_error(std::format("Failed to create MD context: {}", OpenSSLError()));
     }
 
     if (EVP_DigestInit_ex(ctx.get(), EVP_sha256(), nullptr) != 1) {
-        throw std::runtime_error("Failed to initialize MD context: " + OpenSSLError());
+        throw std::runtime_error(std::format("Failed to initialize MD context: {}", OpenSSLError()));
     }
 
     static constexpr std::size_t BUFFER_SIZE = 1024;
@@ -100,7 +100,7 @@ std::string CryptoGuardCtx::Impl::CalculateChecksum(std::iostream &inStream) {
         }
         std::size_t readSize = inStream.gcount();
         if (readSize > 0 && EVP_DigestUpdate(ctx.get(), inBuffer.data(), readSize) != 1) {
-            throw std::runtime_error("Failed to update MD context: " + OpenSSLError());
+            throw std::runtime_error(std::format("Failed to update MD context: {}", OpenSSLError()));
         }
     }
 
@@ -108,7 +108,7 @@ std::string CryptoGuardCtx::Impl::CalculateChecksum(std::iostream &inStream) {
     std::array<unsigned char, EVP_MAX_MD_SIZE> outBuffer;
 
     if (EVP_DigestFinal_ex(ctx.get(), outBuffer.data(), &outLength) != 1) {
-        throw std::runtime_error("Failed to calculate final checksum: " + OpenSSLError());
+        throw std::runtime_error(std::format("Failed to calculate final checksum: {}", OpenSSLError()));
     }
 
     std::ostringstream result;
@@ -132,12 +132,12 @@ void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &ou
     CipherCtxPointer ctx(EVP_CIPHER_CTX_new());
 
     if (!ctx) {
-        throw std::runtime_error("Failed to create cipher context: " + OpenSSLError());
+        throw std::runtime_error(std::format("Failed to create cipher context: {}", OpenSSLError()));
     }
 
     if (EVP_CipherInit_ex(ctx.get(), params.cipher, nullptr, params.key.data(), params.iv.data(), params.encrypt) !=
         1) {
-        throw std::runtime_error("Failed to initialize cipher: " + OpenSSLError());
+        throw std::runtime_error(std::format("Failed to initialize cipher: {}", OpenSSLError()));
     }
 
     static constexpr std::size_t BUFFER_SIZE = 1024;
@@ -154,7 +154,7 @@ void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &ou
         if (readSize > 0) {
             int writeSize;
             if (EVP_CipherUpdate(ctx.get(), outBuffer.data(), &writeSize, inBuffer.data(), readSize) != 1) {
-                throw std::runtime_error("Failed to cipher data: " + OpenSSLError());
+                throw std::runtime_error(std::format("Failed to cipher data: {}", OpenSSLError()));
             }
             outStream.write(reinterpret_cast<char *>(outBuffer.data()), writeSize);
             if (outStream.bad()) {
@@ -164,7 +164,7 @@ void CryptoGuardCtx::Impl::CipherFile(std::iostream &inStream, std::iostream &ou
     }
     int finalWriteSize;
     if (EVP_CipherFinal_ex(ctx.get(), outBuffer.data(), &finalWriteSize) != 1) {
-        throw std::runtime_error("Failed to finalize data: " + OpenSSLError());
+        throw std::runtime_error(std::format("Failed to finalize data: {}", OpenSSLError()));
     }
     outStream.write(reinterpret_cast<char *>(outBuffer.data()), finalWriteSize);
     if (outStream.bad()) {
